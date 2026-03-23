@@ -1,0 +1,5 @@
+INSERT INTO airlines (id, name, code) VALUES (1, 'Air India', 'AI');
+INSERT INTO airlines (id, name, code) VALUES (2, 'IndiGo', '6E');
+INSERT INTO airlines (id, name, code) VALUES (3, 'SpiceJet', 'SG');
+INSERT INTO airlines (id, name, code) VALUES (4, 'Vistara', 'UK');
+INSERT INTO airlines (id, name, code) VALUES (5, 'GoAir', 'G8');
