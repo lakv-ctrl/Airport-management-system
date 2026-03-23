@@ -1,0 +1,44 @@
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(1, 1, 'Aarav', 'Sharma', 'aarav.sharma@gmail.com', '9876543210');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(2, 2, 'Vivaan', 'Patel', 'vivaan.patel@yahoo.com', '9876543211');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(3, 3, 'Aditya', 'Gupta', 'aditya.gupta@gmail.com', '9876543212');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(4, 4, 'Anaya', 'Verma', 'anaya.verma@yahoo.com', '9876543213');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(5, 5, 'Diya', 'Reddy', 'diya.reddy@gmail.com', '9876543214');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(6, 1, 'Kabir', 'Iyer', 'kabir.iyer@yahoo.com', '9876543215');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(7, 2, 'Meera', 'Nair', 'meera.nair@gmail.com', '9876543216');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(8, 3, 'Rohan', 'Singh', 'rohan.singh@yahoo.com', '9876543217');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(9, 5, 'Saanvi', 'Joshi', 'saanvi.joshi@gmail.com', '9876543218');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(10, 1, 'Karan', 'Mehta', 'karan.mehta@yahoo.com', '9876543219');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(11, 2, 'Tara', 'Bhatia', 'tara.bhatia@gmail.com', '9876543220');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(12, 3, 'Arjun', 'Kapoor', 'arjun.kapoor@yahoo.com', '9876543221');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(13, 4, 'Nisha', 'Malhotra', 'nisha.malhotra@gmail.com', '9876543222');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(14, 5, 'Riya', 'Choudhary', 'riya.choudhary@yahoo.com', '9876543223');
+
+INSERT INTO passengers (id, flight_id, first_name, last_name, email, contact) 
+VALUES(15, 1, 'Vikram', 'Sethi', 'vikram.sethi@gmail.com', '9876543224');
