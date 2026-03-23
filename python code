@@ -1,0 +1,500 @@
+import mysql.connector
+def setup_database():
+    conn = mysql.connector.connect(host='localhost',user='root',password='0000',database='airline_management')
+    cursor = conn.cursor()
+
+    # Create tables    
+    cursor.execute('''CREATE TABLE IF NOT EXISTS airlines (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255) NOT NULL,code VARCHAR(10) NOT NULL)''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS flights (id INT AUTO_INCREMENT PRIMARY KEY,flight_number VARCHAR(10) NOT NULL,departure VARCHAR(255) NOT NULL,arrival VARCHAR(255) NOT NULL,departure_time DATETIME NOT NULL,arrival_time DATETIME NOT NULL,airline_id INT,FOREIGN KEY (airline_id) REFERENCES airlines (id))''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS passengers (id INT AUTO_INCREMENT PRIMARY KEY,flight_id INT,first_name VARCHAR(255),last_name VARCHAR(255),email VARCHAR(255),contact VARCHAR(255),FOREIGN KEY (flight_id) REFERENCES flights (id))''')
+    conn.commit()
+    cursor.close()
+    conn.close()
+setup_database()
+
+
+
+#FLIGHT MANAGEMENT
+class FlightManagement:
+    def __init__(self):
+        self.conn = mysql.connector.connect(host='localhost',user='root',password='0000',database='airline_management')
+        self.cursor = self.conn.cursor()
+
+    def add_flight(self, flight_number, departure, arrival, departure_time, arrival_time, airline_id):
+        self.cursor.execute('''INSERT INTO flights (flight_number, departure, arrival, departure_time, arrival_time, airline_id)VALUES (%s, %s, %s, %s, %s, %s);''', (flight_number, departure, arrival, departure_time, arrival_time, airline_id))
+        self.conn.commit()
+
+    def view_flights(self):
+        try:
+            self.cursor.execute('SELECT * FROM flights')
+            for row in self.cursor.fetchall():
+                print(row)
+        except mysql.connector.Error as err:
+            print(f"Error retrieving flights: {err}")
+
+    def update_flight(self, flight_id, flight_number, departure, arrival, departure_time, arrival_time):
+        try:
+            self.cursor.execute('''UPDATE flights SET flight_number=%s, departure=%s, arrival=%s, departure_time=%s, arrival_time=%sWHERE id=%s''', (flight_number, departure, arrival, departure_time, arrival_time, flight_id))
+            self.conn.commit()
+        except mysql.connector.Error as err:
+            print(f"Error updating flight: {err}")
+
+    def delete_flight(self, flight_id):
+        try:
+            self.cursor.execute('DELETE FROM flights WHERE id=%s', (flight_id,))
+            self.conn.commit()
+        except mysql.connector.Error as err:
+            print(f"Error deleting flight: {err}")
+
+    def search_flights(self, flight_id):
+        try:
+            self.cursor.execute('SELECT * FROM flights WHERE id=%s ',(flight_id,))
+            print(self.cursor.fetchall())
+        except mysql.connector.Error as err:
+            print(f"Error retrieving passengers for flight {flight_id}: {err}")
+            return []
+            
+
+    def view_passengers_on_flight(self, flight_id):
+        try:
+            self.cursor.execute('SELECT * FROM passengers WHERE id=%s', (flight_id,))
+            print(self.cursor.fetchall())
+        except mysql.connector.Error as err:
+            print(f"Error retrieving passengers for flight {flight_id}: {err}")
+            return []
+
+    def generate_flight_summary_report(self,flight_id):
+        # Get the total number of flights
+        self.cursor.execute('SELECT COUNT(*) FROM flights')
+        total_flights = self.cursor.fetchone()[0]
+
+        # Get the total number of passengers
+        self.cursor.execute('SELECT COUNT(*) FROM passengers')
+        total_passengers = self.cursor.fetchone()[0]
+
+        # Get the number of passengers per flight
+        self.cursor.execute('''SELECT flight_id, COUNT(*) as passenger_count FROM passengers GROUP BY flight_id''')
+        passenger_counts = self.cursor.fetchall()
+
+    # Print the summary report
+        print("Flight Summary Report")
+        print("----------------------")
+        print(f"Total Flights: {total_flights}")
+        print(f"Total Passengers: {total_passengers}")
+        print("Passengers per Flight:")
+        for airline_id, count in passenger_counts:
+            print(f"Flight ID {flight_id}: {count} passengers")
+        
+
+    def close(self):
+        try:
+            if self.cursor:
+                self.cursor.close()
+            if self.conn:
+                self.conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error closing the connection: {err}")
+
+
+
+
+#PASSENGER MANAGEMENT
+class PassengerManagement:
+    def __init__(self):
+        try:
+            self.conn = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            password='0000',
+            database='airline_management'
+        )
+            self.cursor = self.conn.cursor()
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+            self.conn = None
+            self.cursor = None
+            
+
+    def add_passenger(self, passenger_id,first_name, last_name, email, contact, flight_id):
+        """Add a new passenger to a flight."""
+        try:
+            self.cursor.execute('''INSERT INTO passengers (id,first_name, last_name, email, contact, flight_id)VALUES (%s,%s,%s, %s, %s, %s)''', (passenger_id,first_name, last_name, email, contact, flight_id))
+            self.conn.commit()
+        except mysql.connector.Error as err:
+            print(f"Error adding passenger: {err}")
+
+
+    def view_passenger(self):
+        """View all passengers."""
+        try:
+            self.cursor.execute('SELECT * FROM passengers')
+            passengers = self.cursor.fetchall()
+            for passenger in passengers:
+                print(passenger)
+        except mysql.connector.Error as err:
+            print(f"Error retrieving passengers: {err}")
+        
+
+    def update_passenger(self, first_name, last_name, email, contact, flight_id,passenger_id):
+        """Update details of an existing passenger."""
+        try:
+            self.cursor.execute('''UPDATE passengers SET first_name=%s, last_name=%s, email=%s, contact=%s, flight_id =%sWHERE id=%s''', (first_name, last_name, email, contact, flight_id,passenger_id))
+            self.conn.commit()
+            print(f"Passenger ID {passenger_id} updated successfully.")
+        except mysql.connector.Error as err:
+            print(f"Error updating passenger: {err}")
+        
+
+    def delete_passenger(self, passenger_id):
+        """Delete a passenger from the database."""
+        try:
+            self.cursor.execute('DELETE FROM passengers WHERE id=%s', (passenger_id,))
+            self.conn.commit()
+            print(f"Passenger ID {passenger_id} deleted successfully.")
+        except mysql.connector.Error as err:
+            print(f"Error deleting passenger: {err}")
+
+    def search_passengers(self, first_name):
+        """Search for passengers by name."""
+        try:
+            self.cursor.execute('SELECT * FROM passengers WHERE first_name LIKE %s', (f'%{first_name}%',))
+            results = self.cursor.fetchall()
+            if results:
+                for passenger in results:
+                    print(passenger)
+            else:
+                print("No passengers found with that name.")
+        except mysql.connector.Error as err:
+            print(f"Error searching passengers: {err}")
+        
+
+    def passenger_history(self, passenger_id):
+        """View flight history for a specific passenger."""
+        try:
+            self.cursor.execute('''
+        SELECT flights.flight_number, flights.departure, flights.arrival
+        FROM passengers
+        JOIN flights ON passengers.flight_id = flights.id
+        WHERE passengers.id = %s''', (passenger_id,))
+            history = self.cursor.fetchall()
+            if history:
+                for record in history:
+                    print(record)
+            else:
+                print("No flight history found for this passenger.")
+        except mysql.connector.Error as err:
+            print(f"Error retrieving flight history for passenger ID {passenger_id}: {err}")
+        
+
+    def passenger_summary_report(self,):
+        """Generate a summary report of all passengers."""
+        self.cursor.execute('SELECT * FROM passengers')
+        passengers = self.cursor.fetchall()
+        report = "Passenger Summary Report:\n"
+        report += "ID | Name | Age | Contact Number | Flight ID\n"
+        report += "-" * 50 + "\n"
+        for passenger in passengers:
+            report += f"{passenger[0]} | {passenger[1]} | {passenger[2]} | {passenger[3]} | {passenger[4]}\n"
+        print(report)
+
+    def close(self):
+        """Close the database connection."""
+        self.cursor.close()
+        self.conn.close()            
+
+
+
+
+#AIRLINE MANAGEMENT
+import mysql.connector
+from datetime import datetime, timedelta
+
+class AirlineManagement:
+    def __init__(self):
+        try:
+            self.conn = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            password='0000',
+            database='airline_management'
+        )
+            self.cursor = self.conn.cursor()
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+            self.conn = None
+            self.cursor = None
+        
+
+    def add_airline(self, flightid,name, code):
+        """Add a new airline."""
+        try:
+            self.cursor.execute('INSERT INTO airlines (id,name, code) VALUES (%s,%s, %s)', (flightid,name, code))
+            self.conn.commit()
+            print("Airline added successfully.")
+        except mysql.connector.Error as err:
+            print(f"Error adding airline: {err}")
+
+    def view_airlines(self):
+        """View all airlines."""
+        try:
+            self.cursor.execute('SELECT * FROM airlines')
+            airlines = self.cursor.fetchall()
+            if airlines:
+                print("All Airlines:")
+                for airline in airlines:
+                    print(airline)
+            else:
+                print("No airlines found.")
+        except mysql.connector.Error as err:
+            print(f"Error retrieving airlines: {err}")
+
+    def update_airline(self, airline_id, name, code):
+        """Update an airline's details."""
+        try:
+            self.cursor.execute('UPDATE airlines SET name=%s, code=%s WHERE id=%s', (name, code, airline_id))
+            self.conn.commit()
+            print("Airline updated successfully.")
+        except mysql.connector.Error as err:
+            print(f"Error updating airline: {err}")
+
+    def delete_airline(self, airline_id):
+        """Delete an airline."""
+        try:
+            self.cursor.execute('DELETE FROM airlines WHERE id=%s', (airline_id,))
+            self.conn.commit()
+            print("Airline deleted successfully.")
+        except mysql.connector.Error as err:
+            print(f"Error deleting airline: {err}")
+
+    def search_airline(self, airline_id):
+        """Search for an airline by ID."""
+        try:
+            self.cursor.execute('SELECT * FROM airlines WHERE id=%s', (airline_id,))
+            airline = self.cursor.fetchone()
+            if airline:
+                print(f"Airline found: {airline}")
+            else:
+                print("No airline found with that ID.")
+        except mysql.connector.Error as err:
+            print(f"Error searching airline: {err}")
+
+    def get_next_flight_available(self, airline_id):
+        """Get the next available flight for a specific airline."""
+        try:
+            self.cursor.execute('SELECT * FROM flights WHERE airline_id=%s ORDER BY departure_time LIMIT 1', (airline_id,))
+            flight = self.cursor.fetchone()
+            if flight:
+                print(f"Next available flight for Airline ID {airline_id}: {flight}")
+            else:
+                print("No flights available for this airline.")
+        except mysql.connector.Error as err:
+            print(f"Error retrieving next available flight: {err}")
+
+    def generate_airline_summary_report(self, flight_id):
+        """Generate a summary report of an airline's details."""
+        try:
+            self.cursor.execute('SELECT * FROM airlines WHERE id=%s', (flight_id,))
+            airline = self.cursor.fetchone()
+            if airline:
+                print(f"Summary for Airline ID {flight_id}:")
+                print(f"Name: {airline[1]}")
+                print(f"Code: {airline[2]}")
+                # Optionally, you can add more details like flight information
+            else:
+                print("No airline found with that ID.")
+        except mysql.connector.Error as err:
+            print(f"Error generating airline summary report: {err}")
+
+    def close(self):
+        """Close the database connection."""
+        self.cursor.close()
+        self.conn.close()
+
+
+
+
+
+
+def flight_menu():
+    flight_manager = FlightManagement()
+    while True:
+        print("\n--- Flight Management ---")
+        print("1. Add Flight")
+        print("2. View Flights")
+        print("3. Update Flight")
+        print("4. Delete Flight")
+        print("5. Search Flights")
+        print("6. View Passengers on Flight")
+        print("7. Back to Main Menu")
+        
+        choice = input("Enter your choice (1-8): ")
+     
+        if choice == '1':
+            flight_number = input("Enter flight number: ")
+            departure=input("Enter departure city: ")
+            arrival=input("Enter arrival city:")
+            departure_time = input("Enter departure time (YYYY-MM-DD HH:MM:SS): ")
+            arrival_time = input("Enter arrival time (YYYY-MM-DD HH:MM:SS): ")
+            airline_id = int(input("Enter airline ID: "))
+            flight_manager.add_flight(flight_number, departure,arrival,departure_time, arrival_time, airline_id)
+            print("---Added successfully---")
+            
+        elif choice == '2':
+            flight_manager.view_flights()
+            
+        elif choice == '3':
+           flight_id = input("Enter flight ID to update: ")
+           flight_number = input("Enter new flight number: ")
+           departure=input("Enter departure city:")
+           arrival=input("Enter arrival city:")
+           departure_time = input("Enter new departure time (YYYY-MM-DD HH:MM:SS): ")
+           arrival_time = input("Enter new arrival time (YYYY-MM-DD HH:MM:SS): ")
+           flight_manager.update_flight(flight_id, flight_number, departure,arrival,departure_time, arrival_time)
+           print("---Updated successfully---")
+            
+        elif choice == '4':
+            flight_id = input("Enter flight ID to delete: ")
+            flight_manager.delete_flight(flight_id)
+            print("---Deleted successfully---")
+            
+        elif choice == '5':
+            flight_id =int(input("Enter flight ID to search: "))
+            flight_manager.search_flights(flight_id)
+            
+        elif choice == '6':
+            flight_id =int(input("Enter flight id to view passengers: "))
+            flight_manager.view_passengers_on_flight(flight_id)
+
+        elif choice == '7':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+
+
+
+def passenger_menu():
+    passenger_manager = PassengerManagement()
+    while True:
+        print("\n--- Passenger Management ---")
+        print("1. Add Passenger")
+        print("2. View Passengers")
+        print("3. Update Passenger")
+        print("4. Delete Passenger")
+        print("5. Search Passenger")
+        print("6. Passenger History")
+        print("7. Passenger Summary Report")
+        print("8. Exit to main menu")
+        
+        choice = input("Enter your choice (1-8): ")
+        
+        if choice == '1':
+            passenger_id=int(input("Enter passenger ID:"))
+            first_name = input("Enter passenger first name: ")
+            last_name = input("Enter passenger last name: ")
+            email = input("Enter passenger email: ")
+            contact = input("Enter passenger contact: ")
+            flight_id = int(input("Enter flight ID: "))
+            passenger_manager.add_passenger(passenger_id,first_name, last_name, email, contact, flight_id)
+            print("---Passenger Added successfully---")
+            
+        elif choice == '2':
+            passenger_manager.view_passenger()
+            
+        elif choice == '3':
+            passenger_id = input("Enter passenger ID to update: ")
+            first_name = input("Enter new passenger first name: ")
+            last_name = input("Enter new passenger last name: ")
+            email = input("Enter new passenger email: ")
+            contact = input("Enter new passenger contact: ")
+            flight_id = input("Enter new flight ID: ")
+            passenger_manager.update_passenger(first_name, last_name, email, contact, flight_id,passenger_id)
+            
+        elif choice == '4':
+            passenger_id = input("Enter passenger ID to delete: ")
+            passenger_manager.delete_passenger(passenger_id)
+        elif choice == '5':
+            first_name = input("Enter passenger name to search: ")
+            passenger_manager.search_passengers(first_name)
+        elif choice == '6':
+            passenger_id = int(input("Enter passenger ID to view history: "))
+            passenger_manager.passenger_history(passenger_id)
+        elif choice == '7':
+            passenger_manager.passenger_summary_report()
+        elif choice == '8':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+
+
+
+def airline_menu():
+    airline_manager = AirlineManagement()
+    while True:
+        print("\n--- Airline Management ---")
+        print("1. Add Airline")
+        print("2. View Airlines")
+        print("3. Update Airline")
+        print("4. Delete Airline")
+        print("5. Search Airline")
+        print("6. Get Next Flight Available")
+        print("7. Generate Airline Summary Report")
+        print("8. Exit")
+        
+        choice = input("Enter your choice (1-8): ")
+        
+        if choice == '1':
+            flightid=int(input("Enter flight id: "))
+            name = input("Enter airline name: ")
+            code = input("Enter airline code: ")
+            airline_manager.add_airline(flightid,name, code)
+        elif choice == '2':
+            airline_manager.view_airlines()
+        elif choice == '3':
+            airline_id = input("Enter airline ID to update: ")
+            name = input("Enter new airline name: ")
+            code = input("Enter new airline code: ")
+            airline_manager.update_airline(airline_id, name, code)
+        elif choice == '4':
+            airline_id = input("Enter airline ID to delete: ")
+            airline_manager.delete_airline(airline_id)
+        elif choice == '5':
+            airline_id = input("Enter airline ID to search: ")
+            airline_manager.search_airline(airline_id)
+        elif choice == '6':
+            airline_id = input("Enter airline ID to get next flight available: ")
+            airline_manager.get_next_flight_available(airline_id)
+        elif choice == '7':
+            airline_id = input("Enter airline ID to generate summary report: ")
+            airline_manager.generate_airline_summary_report(airline_id)
+        elif choice == '8':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+
+def main_menu():
+    while True:
+        print("\n---Airline Management System ---")
+        print("1. Manage Flights")
+        print("2. Manage Passengers")
+        print("3. Manage Airlines")
+        print("4. Exit")
+        
+        choice = input("Enter your choice (1-4): ")
+        
+        if choice == '1':
+            flight_menu()
+        elif choice == '2':
+            passenger_menu()
+        elif choice == '3':
+            airline_menu()
+        elif choice == '4':
+            print("Exiting the system.")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+main_menu()
